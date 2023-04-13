@@ -23,6 +23,7 @@ hierarchy:
         - 'puppet-common'
       url: 'http://localhost:8080' ## you can now also use https
       token: 'sometoken'
+      get_all_fields: true # optional, retrieve everything (as label:value pairs), not just username/password
 ```
 
 next try looking up a key. Note items can have the same title inside onepassword. These are now combined and returned as an array. Does not work yet when multiple vaults are defined.
@@ -42,4 +43,31 @@ root@puppet:/# puppet lookup dev-db-login2
 - username: web
   password: web
 ```
+These can be referenced in a puppet manifest using:
+```puppet
+$var = lookup('dev-db-pass')
+$var = lookup('dev-db-login2.password')
+$var = lookup('dev-db-login2.password', undef, undef, 'Default Value')
+```
 
+#### Getting All Fields
+
+if `get_all_fields` is set to `true` in the options, all fields set on a credential are returned from 1password, 
+using label as the key:
+
+```
+puppet lookup 'Test Credential'
+---                                     
+username: root
+password: my_password
+notesPlain: 'This is a password for some server'
+text: test
+text2: test2
+```
+
+These can be referenced in puppet via:
+```puppet
+$var = lookup('Test Credential.text2')
+# or, with a default value:
+$var = lookup('Test Credential.text2', undef, undef, 'Default Value')
+```
